@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'commons-io:commons-io:2.8.0'
+    implementation 'org.apache.commons:commons-lang3:3.10'
+    implementation 'org.eclipse.jdt:org.eclipse.jdt.core:3.25.0'
+    implementation 'com.github.nbauma109:netbeans-visual-diff-standalone:2.0.6'
+}
