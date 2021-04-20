@@ -11,8 +11,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class StringUtilities {
 
+    private StringUtilities() {
+        super();
+    }
+
     public static String replaceAll(final String text, final String regex, final String replacement, final int fromIdx, final int toIdx) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(text.substring(0, fromIdx));
         sb.append(text.substring(fromIdx, toIdx).replaceAll(regex, replacement));
         sb.append(text.substring(toIdx));
@@ -20,7 +24,7 @@ public class StringUtilities {
     }
 
     public static String replace(final String text, final String searchString, final String replacement, final int fromIdx, final int toIdx) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(text.substring(0, fromIdx));
         sb.append(text.substring(fromIdx, toIdx).replace(searchString, replacement));
         sb.append(text.substring(toIdx));
@@ -28,7 +32,7 @@ public class StringUtilities {
     }
 
     public static String patch(final String text, final String patch, final int fromIdx, final int toIdx) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(text.substring(0, fromIdx));
         sb.append(patch);
         sb.append(text.substring(toIdx));
@@ -36,14 +40,14 @@ public class StringUtilities {
     }
 
     public static String applyModifications(final String text, final Map<Range<Integer>, Modification[]> modificationMap) {
-        List<Integer> indexes = collectIndexes(modificationMap.keySet());
+        final List<Integer> indexes = collectIndexes(modificationMap.keySet());
         indexes.add(text.length());
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < indexes.size() - 1; i++) {
-            Integer fromIdx = indexes.get(i);
-            Integer toIdx = indexes.get(i + 1);
-            Range<Integer> range = Range.between(fromIdx, toIdx);
-            Modification[] modification = modificationMap.get(range);
+            final Integer fromIdx = indexes.get(i);
+            final Integer toIdx = indexes.get(i + 1);
+            final Range<Integer> range = Range.between(fromIdx, toIdx);
+            final Modification[] modification = modificationMap.get(range);
             sb.append(applyModifications(text, fromIdx, toIdx, modification));
         }
         return sb.toString();
@@ -52,7 +56,7 @@ public class StringUtilities {
     private static String applyModifications(final String text, final int fromIdx, final int toIdx, final Modification... modifications) {
         String edit = text.substring(fromIdx, toIdx);
         if (modifications != null && modifications.length > 0) {
-            for (Modification modification : modifications) {
+            for (final Modification modification : modifications) {
                 if (modification.getSearchString() == null) {
                     edit = modification.getReplacementString();
                 } else if (modification.isRegex()) {
@@ -74,9 +78,9 @@ public class StringUtilities {
     }
 
     private static List<Integer> collectIndexes(final Set<Range<Integer>> rangeSet) {
-        Set<Integer> indexes = new TreeSet<>();
+        final Set<Integer> indexes = new TreeSet<>();
         indexes.add(0);
-        for (Range<Integer> range : rangeSet) {
+        for (final Range<Integer> range : rangeSet) {
             indexes.add(range.getMinimum());
             indexes.add(range.getMaximum());
         }

@@ -1,13 +1,10 @@
 package constant.replacer;
 
-import static constant.replacer.ConstantReplacer.COLUMN_NUMBER;
 import static constant.replacer.ConstantReplacer.CONSTANT_NAME;
 import static constant.replacer.ConstantReplacer.CONSTANT_VALUE;
 import static constant.replacer.ConstantReplacer.LINE_NUMBER;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,13 +19,13 @@ public class ConstantChoiceEditor extends DefaultCellEditor {
 
     private static final long serialVersionUID = 1L;
 
-    private final ConstantReplacer constantReplacer;
+    private final transient ConstantReplacer constantReplacer;
     private final ConstantReplacerDiffPanel constantReplacerPanel;
     private String constantName;
-    private Map<Integer, String> contantNamesByRow = new HashMap<>();
-    private File file;
+    private final Map<Integer, String> contantNamesByRow = new HashMap<>();
+    private final File file;
 
-    public ConstantChoiceEditor(ConstantReplacer constantReplacer, ConstantReplacerDiffPanel constantReplacerPanel, File file) {
+    public ConstantChoiceEditor(final ConstantReplacer constantReplacer, final ConstantReplacerDiffPanel constantReplacerPanel, final File file) {
         super(new JComboBox<>());
         this.constantReplacer = constantReplacer;
         this.constantReplacerPanel = constantReplacerPanel;
@@ -41,38 +38,32 @@ public class ConstantChoiceEditor extends DefaultCellEditor {
     }
 
     @Override
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+    public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column) {
         if (value instanceof String) {
             constantName = (String) value;
             contantNamesByRow.put(row, constantName);
         }
-        JComboBox<String> constantNameChoices = new JComboBox<>(constantReplacer.getConstantCandidates(file).get(row).getCandidates().stream().toArray(String[]::new));
-        String constantValue = constantReplacer.getColumnValue(file, row, CONSTANT_VALUE);
+        final JComboBox<String> constantNameChoices = new JComboBox<>(constantReplacer.getConstantCandidates(file).get(row).getCandidates().stream().toArray(String[]::new));
+        final String constantValue = constantReplacer.getColumnValue(file, row, CONSTANT_VALUE);
         constantNameChoices.addItem(constantValue);
         constantNameChoices.addItem("");
         constantNameChoices.setSelectedItem(constantName);
-        constantNameChoices.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                constantName = (String) constantNameChoices.getSelectedItem();
-                contantNamesByRow.put(row, constantName);
-                Object[][] rows = constantReplacer.getRowData(file);
-                constantReplacerPanel.showReplacements(buildModificationMap(rows));
-                Integer lineNumber = constantReplacer.getColumnValue(file, row, LINE_NUMBER);
-                Integer columnNumber = constantReplacer.getColumnValue(file, row, COLUMN_NUMBER);
-                constantReplacerPanel.setLineNumber(lineNumber);
-                constantReplacerPanel.setColumnNumber(columnNumber);
-            }
+        constantNameChoices.addActionListener(e -> {
+            constantName = (String) constantNameChoices.getSelectedItem();
+            contantNamesByRow.put(row, constantName);
+            final Object[][] rows = constantReplacer.getRowData(file);
+            constantReplacerPanel.showReplacements(buildModificationMap(rows));
+            final Integer lineNumber = constantReplacer.getColumnValue(file, row, LINE_NUMBER);
+            constantReplacerPanel.setLineNumber(lineNumber);
         });
         return constantNameChoices;
     }
 
-    public Map<Range<Integer>, Modification[]> buildModificationMap(Object[][] rows) {
-        Map<Range<Integer>, Modification[]> modificationMap = new HashMap<>();
+    public Map<Range<Integer>, Modification[]> buildModificationMap(final Object[][] rows) {
+        final Map<Range<Integer>, Modification[]> modificationMap = new HashMap<>();
         for (int row = 0; row < rows.length; row++) {
-            ConstantCandidates constantCandidates = constantReplacer.getConstantCandidates(file).get(row);
-            String constantName = contantNamesByRow.getOrDefault(row, constantReplacer.getColumnValue(file, row, CONSTANT_NAME));
+            final ConstantCandidates constantCandidates = constantReplacer.getConstantCandidates(file).get(row);
+            final String constantName = contantNamesByRow.getOrDefault(row, constantReplacer.getColumnValue(file, row, CONSTANT_NAME));
             modificationMap.put(constantCandidates.getRange(), new Modification[] { new Patch(constantName) });
         }
         return modificationMap;
