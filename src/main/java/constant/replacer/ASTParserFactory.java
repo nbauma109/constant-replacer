@@ -11,7 +11,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 
 public class ASTParserFactory {
 
@@ -44,13 +43,6 @@ public class ASTParserFactory {
         parser.setCompilerOptions(options);
         parser.createAST(null).accept(listener);
         return parser;
-    }
-
-    public int getPositionAt(final Integer line, final Integer column, final String source) {
-        final ASTParser parser = ASTParser.newParser(AST.JLS_Latest);
-        parser.setKind(ASTParser.K_COMPILATION_UNIT);
-        parser.setSource(source.toCharArray());
-        return ((CompilationUnit) parser.createAST(null)).getPosition(line, column);
     }
 
 }

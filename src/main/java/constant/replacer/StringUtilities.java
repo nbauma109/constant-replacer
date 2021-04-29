@@ -1,6 +1,7 @@
 package constant.replacer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 
 public class StringUtilities {
 
@@ -87,4 +89,16 @@ public class StringUtilities {
         return new ArrayList<>(indexes);
     }
 
+    public static Object findClosestMatch(Collection<?> compareObjects, Object target) {
+        int distance = Integer.MAX_VALUE;
+        Object closest = null;
+        for (Object compareObject : compareObjects) {
+            int currentDistance = LevenshteinDistance.getDefaultInstance().apply(compareObject.toString(), target.toString());
+            if (currentDistance < distance) {
+                distance = currentDistance;
+                closest = compareObject;
+            }
+        }
+        return closest;
+    }
 }

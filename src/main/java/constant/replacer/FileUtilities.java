@@ -1,11 +1,17 @@
 package constant.replacer;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.Range;
 
 public class FileUtilities {
 
@@ -32,4 +38,16 @@ public class FileUtilities {
     public static String getLine(final File file, final int sourceLineNumber) throws IOException {
         return getLine(file, sourceLineNumber, StandardCharsets.UTF_8);
     }
+
+    public static void applyModifications(final File file, final Map<Range<Integer>, Modification[]> modificationMap) throws IOException {
+        String modifiedContents;
+        try (FileReader fileReader = new FileReader(file)) {
+            String fileContents = IOUtils.toString(fileReader);
+            modifiedContents = StringUtilities.applyModifications(fileContents, modificationMap);
+        }
+        try (FileWriter fileWriter = new FileWriter(file)) {
+            IOUtils.write(modifiedContents, fileWriter);
+        }
+    }
+
 }

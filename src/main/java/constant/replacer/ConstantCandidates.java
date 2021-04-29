@@ -6,12 +6,22 @@ import org.apache.commons.lang3.Range;
 
 public class ConstantCandidates {
 
-    private Set<String> candidates;
+    private String constantValue;
     private Range<Integer> range;
+    private Set<ConstantName> candidates;
 
-    public ConstantCandidates(Set<String> candidates, Range<Integer> range) {
-        this.candidates = candidates;
+    public ConstantCandidates(String constantValue, Range<Integer> range, Set<ConstantName> candidates) {
+        this.constantValue = constantValue;
         this.range = range;
+        this.candidates = candidates;
+    }
+
+    public String getConstantValue() {
+        return constantValue;
+    }
+
+    public void setConstantValue(String constantValue) {
+        this.constantValue = constantValue;
     }
 
     public Range<Integer> getRange() {
@@ -22,11 +32,11 @@ public class ConstantCandidates {
         this.range = range;
     }
 
-    public Set<String> getCandidates() {
+    public Set<ConstantName> getCandidates() {
         return candidates;
     }
 
-    public void setCandidates(Set<String> candidates) {
+    public void setCandidates(Set<ConstantName> candidates) {
         this.candidates = candidates;
     }
 }
