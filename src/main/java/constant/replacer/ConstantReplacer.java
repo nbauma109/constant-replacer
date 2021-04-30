@@ -24,7 +24,6 @@ import java.util.function.BiFunction;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -40,8 +39,6 @@ import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 
 import org.apache.commons.io.IOUtils;
@@ -375,40 +372,8 @@ public class ConstantReplacer extends SimplePathVisitor {
 
             final ConstantReplacerDiffPanel diffPanel = new ConstantReplacerDiffPanel(file);
             diffPanel.showReplacements(buildModificationMap(file, false, rows));
-            table.getModel().addTableModelListener(new TableModelListener() {
-
-                private boolean adjusting;
-
-                @Override
-                public void tableChanged(TableModelEvent e) {
-                    if (!adjusting) {
-                        adjusting = true;
-                        int row = e.getFirstRow();
-                        int col = e.getColumn();
-                        ConstantChoiceEditor editor = (ConstantChoiceEditor) table.getColumn(ConstantTable.CONSTANT_NAME).getCellEditor();
-                        JComboBox<ConstantName> constantNameChoices = editor.getConstantNameChoices(row);
-                        ConstantName constantName = (ConstantName) constantNameChoices.getSelectedItem();
-                        table.setValueAt(constantName, row, col);
-                        Object switchExpression = table.getValueAt(row, ArrayUtils.indexOf(COLS, ConstantTable.SWITCH_EXPRESSION));
-                        if (switchExpression != null && !"".equals(switchExpression)) {
-                            for (int i = row + 1; i < table.getRowCount(); i++) {
-                                if (switchExpression.equals(table.getValueAt(i, ArrayUtils.indexOf(COLS, ConstantTable.SWITCH_EXPRESSION)))) {
-                                    String prefix = constantName.getQualifier();
-                                    if (prefix != null) {
-                                        String constVal = (String) table.getValueAt(i, ArrayUtils.indexOf(COLS, ConstantTable.CONSTANT_VALUE));
-                                        JComboBox<ConstantName> choices = (JComboBox<ConstantName>) editor.getTableCellEditorComponent(table, constVal, false, i, col);
-                                        List<ConstantName> constantNames = findConstantsByQualifier(choices.getModel(), constantName.getQualifier());
-                                        Object closestMatch = StringUtilities.findClosestMatch(constantNames, constantName);
-                                        table.setValueAt(closestMatch, i, col);
-                                    }
-                                }
-                            }
-                        }
-                        diffPanel.showReplacements(buildModificationMap(file, false, rows));
-                        adjusting = false;
-                    }
-                }
-            });
+            ConstantTableListener constantTableListener = new ConstantTableListener(this, table, diffPanel, rows, file);
+            table.getModel().addTableModelListener(constantTableListener);
 
             final ConstantChoiceEditor constantChoiceEditor = new ConstantChoiceEditor(this, file);
             table.getColumn(ConstantTable.CONSTANT_NAME).setCellEditor(constantChoiceEditor);
@@ -418,17 +383,7 @@ public class ConstantReplacer extends SimplePathVisitor {
             splitPane.add(diffPanel);
 
             table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            table.getSelectionModel().addListSelectionListener(listSelectionEvent -> {
-                if (listSelectionEvent.getValueIsAdjusting()) {
-                    return;
-                }
-                final ListSelectionModel lsm = (ListSelectionModel) listSelectionEvent.getSource();
-                if (!lsm.isSelectionEmpty()) {
-                    final int selectedRow = lsm.getMinSelectionIndex();
-                    final Integer lineNumber = getColumnValue(rows[selectedRow], ConstantTable.LINE_NUMBER);
-                    diffPanel.gotoLineNumber(lineNumber);
-                }
-            });
+            table.getSelectionModel().addListSelectionListener(constantTableListener);
 
             tabbedPane.addTab(file.getName().replace(JAVA_EXTENSION, ""), null, splitPane, file.getAbsolutePath());
         }
